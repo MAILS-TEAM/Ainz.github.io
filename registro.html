@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario</title>
+
+    <style>
+        body {
+            background-color: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .form-container {
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 50px 0;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .form-container input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .form-container button {
+            background: white;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .form-container button:hover {
+            background: #ff69b4;
+            color: white;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            display: none;
+        }
+
+        /* Estilos de la ventana flotante */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        .modal button {
+            background-color: black;
+            color: white;
+            padding: 10px;
+            border: none;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .modal button:hover {
+            background: #ff69b4;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h2>Registro de Usuario</h2>
+
+    <div class="form-container">
+        <input type="text" id="name" placeholder="Nombre">
+        <span id="nameError" class="error">Este nombre ya está en uso</span>
+
+        <input type="email" id="email" placeholder="Correo electrónico" oninput="validateEmail()">
+        <span id="emailError" class="error">Correo inválido</span>
+
+        <input type="password" id="password" placeholder="Contraseña">
+
+        <button onclick="registerUser()">Registrarse</button>
+    </div>
+
+    <!-- Ventana Flotante -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3>Registro Completado</h3>
+            <p id="userID"></p>
+            <button onclick="redirectToWhatsApp()">Ir al grupo</button>
+        </div>
+    </div>
+
+    <script>
+        function validateEmail() {
+            const emailInput = document.getElementById("email");
+            const emailError = document.getElementById("emailError");
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(emailInput.value)) {
+                emailError.style.display = "block";
+            } else {
+                emailError.style.display = "none";
+            }
+        }
+
+        function registerUser() {
+            let name = document.getElementById("name").value.trim();
+            let email = document.getElementById("email").value.trim();
+            let password = document.getElementById("password").value.trim();
+            let nameError = document.getElementById("nameError");
+
+            if (!name || !email || !password) {
+                alert("Por favor, complete todos los campos.");
+                return;
+            }
+
+            fetch('http://localhost:3000/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("userID").innerText = "Tu ID es: " + data.userID;
+                    document.getElementById("modal").style.display = "flex";
+                } else if (data.error === "nombre_duplicado") {
+                    nameError.style.display = "block";
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function redirectToWhatsApp() {
+            window.location.href = "https://chat.whatsapp.com/tu-enlace-de-grupo";
+        }
+    </script>
+
+</body>
+</html>
